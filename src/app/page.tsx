@@ -193,7 +193,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background text-foreground">
+    <div className="flex flex-col h-screen bg-transparent text-foreground">
       {/* Header */}
       <div className="border-b border-border p-4">
         <div className="flex items-center justify-between">
