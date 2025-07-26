@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send } from "lucide-react";
+import { Send, Upload, FileText } from "lucide-react";
 
 interface Message {
   id: string;
@@ -15,17 +15,21 @@ interface Message {
 }
 
 export default function Home() {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
-      content: "Hello! I'm your college assistant. How can I help you today?",
+      content: "Hello! I'm your college assistant. How can I help you today? You can ask me questions or upload documents (PDF/PPTX) for me to learn from.",
       role: "assistant",
       timestamp: new Date(),
     },
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     if (scrollAreaRef.current) {
@@ -51,28 +55,124 @@ export default function Home() {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = input.trim();
     setInput("");
     setIsLoading(true);
 
-    // TODO: Replace with actual API call to backend
-    // const response = await fetch('/api/chat', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ message: input.trim() })
-    // });
-    // const data = await response.json();
+    try {
+      // Create FormData for the FastAPI backend
+      const formData = new FormData();
+      formData.append('query', currentInput);
 
-    // Dummy response for now
-    setTimeout(() => {
+      // Call your FastAPI backend
+      const response = await fetch(`${API_URL}/chat/`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: getDummyResponse(input.trim()),
+        content: data.response || "Sorry, I couldn't generate a response.",
         role: "assistant",
         timestamp: new Date(),
       };
+      
       setMessages(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error('Error calling backend:', error);
+      
+      // Fallback to dummy response if backend fails
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "Sorry, I'm having trouble connecting to the server. Please try again later.",
+        role: "assistant",
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Check file type
+    if (!file.name.endsWith('.pdf') && !file.name.endsWith('.pptx')) {
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        content: "Please upload only PDF or PPTX files.",
+        role: "assistant",
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+      return;
+    }
+
+    setIsUploading(true);
+    
+    // Add upload message
+    const uploadMessage: Message = {
+      id: Date.now().toString(),
+      content: `📄 Uploading document: ${file.name}`,
+      role: "user",
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, uploadMessage]);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch(`${API_URL}/upload_document/`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      const successMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: `✅ Document uploaded successfully! I can now answer questions about the content in "${file.name}".`,
+        role: "assistant",
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, successMessage]);
+    } catch (error) {
+      console.error('Error uploading document:', error);
+      
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "❌ Sorry, there was an error uploading your document. Please make sure the backend server is running.",
+        role: "assistant",
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsUploading(false);
+      // Clear the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
   };
 
   const getDummyResponse = (input: string): string => {
@@ -96,8 +196,40 @@ export default function Home() {
     <div className="flex flex-col h-screen bg-background text-foreground">
       {/* Header */}
       <div className="border-b border-border p-4">
-        <h1 className="text-xl font-semibold">College Assistant</h1>
-        <p className="text-sm text-muted-foreground">Your AI-powered college information bot</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-semibold">College Assistant</h1>
+            <p className="text-sm text-muted-foreground">Your AI-powered college information bot</p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              onClick={handleUploadClick}
+              disabled={isUploading}
+              variant="outline"
+              size="sm"
+              className="flex items-center space-x-2"
+            >
+              {isUploading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                  <span>Uploading...</span>
+                </>
+              ) : (
+                <>
+                  <Upload className="h-4 w-4" />
+                  <span>Upload Doc</span>
+                </>
+              )}
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.pptx"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Messages Area */}
@@ -167,7 +299,7 @@ export default function Home() {
             </Button>
           </div>
           <p className="text-xs text-muted-foreground mt-2 text-center">
-            Press Enter to send, Shift + Enter for new line
+            Press Enter to send, Shift + Enter for new line • Upload PDF/PPTX documents using the upload button
           </p>
         </div>
       </div>
