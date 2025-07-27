@@ -1,333 +1,230 @@
-# College Assistant Chatbot
+# College Bot - AI-Powered Document Q&A System
 
-A modern, AI-powered college assistant chatbot built with Next.js and shadcn/ui components. This application provides students and prospective students with instant access to college information through an intuitive chat interface with document upload capabilities.
+A FastAPI-based chatbot that uses RAG (Retrieval-Augmented Generation) to answer questions based on uploaded documents. The system supports PDF and PPTX files, uses ChromaDB for vector storage, and integrates with Azure services for scalable document storage.
 
-## ✨ Features
+## Features
 
-- **Full-screen chat interface** - Gemini-like design for optimal user experience
-- **Document upload support** - Upload PDF and PPTX files for AI to learn from
-- **Azure Files integration** - Sync documents from Azure Files storage
-- **Azure Blob Storage** - Automatic backup of uploaded documents
-- **Real-time messaging** - Instant responses powered by Google Gemini AI
-- **RAG (Retrieval Augmented Generation)** - AI answers based on uploaded documents
-- **Dark/Light theme support** - Automatic theme detection and switching
-- **Responsive design** - Works seamlessly on desktop and mobile devices
-- **Modern UI components** - Built with shadcn/ui for consistent styling
-- **Vector database integration** - ChromaDB for efficient document search
+- **Document Upload & Processing**: Upload PDF and PPTX files with automatic text extraction and chunking
+- **Vector Database**: ChromaDB for efficient similarity search and document retrieval
+- **AI-Powered Chat**: Google Gemini integration for intelligent responses
+- **Azure Integration**: 
+  - Azure Blob Storage for uploaded documents
+  - Azure Files for existing document collections
+- **Memory Optimization**: Lazy loading of models and memory management endpoints
+- **RESTful API**: Complete FastAPI backend with CORS support
 
-## 🚀 Tech Stack
+## Architecture
 
-### Frontend
-- **Framework**: Next.js 15+ (App Router)
-- **UI Components**: shadcn/ui + Radix UI
-- **Styling**: Tailwind CSS
-- **Icons**: Lucide React
-- **TypeScript**: Full type safety
-
-### Backend
-- **Framework**: FastAPI (Python)
-- **AI Model**: Google Gemini Pro
-- **Embeddings**: Sentence Transformers (all-MiniLM-L6-v2)
-- **Vector Database**: ChromaDB
-- **Document Processing**: pypdf, python-pptx
-- **Cloud Storage**: Azure Files & Azure Blob Storage
-
-## 📦 Installation & Setup
-
-### Prerequisites
-- Node.js (v18+)
-- Python (v3.8+)
-- Google Gemini API Key ([Get one here](https://makersuite.google.com/app/apikey))
-
-### 1. Frontend Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/Chetancj121212/collegegpt_frontend.git
-cd college_bot
-
-# Install dependencies
-npm install
-
-# Create environment file
-echo "NEXT_PUBLIC_API_URL=http://localhost:8000" > .env.local
-
-# Start the frontend
-npm run dev
+```
+Frontend (React/HTML) → FastAPI Backend → ChromaDB (Vector DB)
+                                     ↓
+                              Google Gemini API
+                                     ↓
+                              Azure Storage Services
 ```
 
-### 2. Backend Setup
+## Prerequisites
 
-```bash
-# Navigate to backend directory
-cd backend
+- Python 3.8+
+- Google Gemini API key
+- Azure Storage Account (optional but recommended)
+- Git
 
-# Create Python virtual environment
-python -m venv .venv
+## Installation
 
-# Activate virtual environment (Windows)
-.venv\Scripts\activate
-# On macOS/Linux: source .venv/bin/activate
-
-# Install Python dependencies
-pip install fastapi uvicorn python-dotenv google-generativeai sentence-transformers chromadb pypdf python-pptx python-multipart
-
-# Create environment file with your Gemini API key
-echo "GEMINI_API_KEY=your_actual_api_key_here" > .env
-
-# Start the backend server
-python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
-
-## 🔧 Configuration
-
-## 🔧 Configuration
-
-### Environment Variables
-
-#### Frontend (.env.local)
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
-```
-
-#### Backend (.env)
-```env
-GEMINI_API_KEY=your_actual_gemini_api_key_here
-
-# Azure Files Configuration (optional - for document sync)
-AZURE_STORAGE_CONNECTION_STRING=your_azure_storage_connection_string
-AZURE_FILES_SHARE_NAME=your_file_share_name
-
-# Azure Blob Storage Configuration (optional - for document backup)
-AZURE_BLOB_CONNECTION_STRING=your_azure_blob_connection_string
-AZURE_BLOB_CONTAINER_NAME=uploaded-documents
-```
-
-### Gemini API Key Setup
-
-1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Create a new API key
-3. Copy the key and add it to your backend `.env` file
-4. Replace `your_actual_gemini_api_key_here` with your key
-
-### Azure Integration Setup (Optional)
-
-For document storage and sync capabilities:
-
-1. **Azure Files Setup** - See [AZURE_FILES_SETUP.md](./AZURE_FILES_SETUP.md) for detailed instructions
-2. **Azure Blob Storage** - Automatically configured when Azure Files is set up
-3. **Benefits**: 
-   - Bulk document sync from cloud storage
-   - Automatic backup of uploaded documents
-   - Scalable document management
-
-## 🚀 Running the Application
-
-### Method 1: Using Separate Terminals
-
-**Terminal 1 - Backend:**
-```bash
-cd backend
-.venv\Scripts\activate  # Windows
-# source .venv/bin/activate  # macOS/Linux
-python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
-
-**Terminal 2 - Frontend:**
-```bash
-npm run dev
-```
-
-### Method 2: Using VS Code Python Environment
-
-If you're using VS Code, the Python environment will be automatically configured:
-
-1. Open the backend folder in VS Code
-2. Select the Python interpreter (`.venv/Scripts/python.exe`)
-3. Run the uvicorn command directly
-
-## 📡 API Endpoints
-
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8000
-- **API Documentation**: http://localhost:8000/docs (FastAPI auto-generated)
-
-### Available Endpoints
-
-- `POST /chat/` - Send chat messages to the AI
-- `POST /upload_document/` - Upload PDF or PPTX documents
-- `POST /sync_azure_files/` - Sync documents from Azure Files (if configured)
-- `POST /sync_azure_blobs/` - Sync uploaded documents from Azure Blob Storage
-
-## 📱 Usage Guide
-
-1. **Starting a conversation**: Type your question in the input field
-2. **Sending messages**: Press Enter or click the send button
-3. **Multi-line messages**: Use Shift + Enter for new lines
-4. **Upload documents**: Click the "Upload Doc" button to add PDF/PPTX files
-5. **Sync Azure Files**: Click "Sync Azure Files" to import documents from Azure storage
-6. **Sync uploaded documents**: Click "Sync Uploads" to process uploaded documents
-7. **Document-based Q&A**: Ask questions about uploaded documents
-8. **Auto-scroll**: Chat automatically scrolls to the latest message
-
-## 🔄 How RAG Works
-
-1. **Document Upload**: PDF/PPTX files are uploaded and text is extracted
-2. **Text Chunking**: Documents are split into manageable chunks
-3. **Embedding Generation**: Text chunks are converted to vector embeddings
-4. **Storage**: Embeddings are stored in ChromaDB vector database
-5. **Query Processing**: User questions are embedded and matched with relevant chunks
-6. **Response Generation**: Gemini AI generates responses based on relevant context
-
-## 🛠 Troubleshooting
-
-### Common Issues
-
-1. **Backend Import Errors**
+1. **Clone the repository**
    ```bash
-   # Make sure you're in the backend directory
+   git clone <your-repo-url>
+   cd college_bot
+   ```
+
+2. **Create virtual environment**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+3. **Install dependencies**
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   ```
+
+4. **Environment Configuration**
+   Create a `.env` file in the `backend` directory:
+   ```env
+   # Required
+   GEMINI_API_KEY=your_gemini_api_key_here
+   
+   # Optional - Azure Blob Storage (for uploaded documents)
+   AZURE_BLOB_CONNECTION_STRING=your_azure_blob_connection_string
+   AZURE_BLOB_CONTAINER_NAME=uploaded-documents
+   
+   # Optional - Azure Files (for existing document collections)
+   AZURE_STORAGE_CONNECTION_STRING=your_azure_files_connection_string
+   AZURE_FILES_SHARE_NAME=college-documents
+   ```
+
+## Configuration
+
+The application uses several configuration parameters defined in `config.py`:
+
+- `EMBEDDING_MODEL_NAME`: Sentence transformer model for embeddings
+- `EMBEDDING_BATCH_SIZE`: Batch size for processing embeddings
+- `MAX_CHUNKS_PER_DOCUMENT`: Maximum chunks per document to manage memory
+- `MEMORY_WARNING_THRESHOLD`: Memory usage warning threshold
+- `MEMORY_CRITICAL_THRESHOLD`: Critical memory usage threshold
+
+## Usage
+
+1. **Start the backend server**
+   ```bash
    cd backend
    python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
    ```
 
-2. **CORS Issues**
-   - Ensure backend is running on port 8000
-   - Check that NEXT_PUBLIC_API_URL is set correctly
+2. **Access the API**
+   - API Base URL: `http://localhost:8000`
+   - Health Check: `http://localhost:8000/health`
+   - API Documentation: `http://localhost:8000/docs`
 
-3. **API Key Issues**
-   - Verify your Gemini API key is valid
-   - Check the .env file in the backend directory
+## API Endpoints
 
-4. **File Upload Issues**
-   - Ensure backend has write permissions
-   - Check supported file types (PDF, PPTX only)
+### Core Endpoints
 
-5. **Python Environment Issues**
-   ```bash
-   # Recreate virtual environment
-   rm -rf .venv  # or rmdir /s .venv on Windows
-   python -m venv .venv
-   .venv\Scripts\activate
-   pip install -r requirements.txt
-   ```
+- `GET /` - Root endpoint with API status
+- `GET /health` - Health check with system status
+- `POST /upload_document/` - Upload and process documents
+- `POST /chat/` - Chat with the AI using uploaded documents
+- `POST /memory/cleanup` - Force memory cleanup
 
-## 📂 Project Structure
+### Document Management
 
+- `GET /uploaded_documents/` - List all uploaded documents
+- `DELETE /uploaded_documents/{filename}` - Delete a specific document
+- `POST /sync_azure_blobs/` - Sync Azure Blob Storage documents
+- `POST /sync_azure_files/` - Sync Azure Files documents
+
+### System Status
+
+- `GET /system/status` - Complete system status
+- `GET /azure_files/list` - List Azure Files documents
+- `GET /debug/chromadb` - Debug ChromaDB contents
+
+## Document Processing Pipeline
+
+1. **Upload**: Document uploaded via `/upload_document/`
+2. **Storage**: Stored in Azure Blob (or locally as fallback)
+3. **Text Extraction**: Extract text from PDF/PPTX
+4. **Chunking**: Split text into manageable chunks
+5. **Embedding**: Generate vector embeddings using Sentence Transformers
+6. **Storage**: Store embeddings and metadata in ChromaDB
+
+## Chat Flow
+
+1. **Query**: User sends question via `/chat/`
+2. **Embedding**: Generate embedding for user query
+3. **Retrieval**: Find relevant document chunks using similarity search
+4. **Generation**: Generate response using Google Gemini with retrieved context
+5. **Response**: Return AI-generated answer to user
+
+## Memory Management
+
+The application includes several memory optimization features:
+
+- **Lazy Loading**: Models loaded only when needed
+- **Batch Processing**: Embeddings processed in configurable batches
+- **Garbage Collection**: Automatic cleanup after operations
+- **Memory Cleanup Endpoint**: Manual memory management via API
+
+## Azure Integration
+
+### Azure Blob Storage
+- Stores uploaded documents with automatic retry mechanism
+- Supports document synchronization to vector database
+- Fallback to local storage if Azure is unavailable
+
+### Azure Files
+- Integration with existing document collections
+- Bulk PDF processing and synchronization
+- Support for large document repositories
+
+## Error Handling
+
+- Comprehensive error handling with detailed HTTP responses
+- Automatic cleanup of temporary files
+- Retry mechanisms for Azure operations
+- Graceful fallback to local storage
+
+## Development
+
+### Project Structure
 ```
 college_bot/
-├── src/                          # Frontend source code
-│   ├── app/
-│   │   ├── globals.css          # Global styles
-│   │   ├── layout.tsx           # Root layout
-│   │   └── page.tsx             # Main chat interface
-│   ├── blocks/                  # Background components
-│   │   └── Backgrounds/
-│   │       └── Silk/            # Silk background animation
-│   ├── components/ui/           # shadcn/ui components
-│   └── lib/
-│       └── utils.ts             # Utility functions
-├── backend/                     # Backend source code
+├── backend/
+│   ├── main.py              # FastAPI application
+│   ├── config.py            # Configuration settings
+│   ├── requirements.txt     # Python dependencies
 │   ├── utils/
-│   │   ├── document_processor.py # PDF/PPTX processing
-│   │   ├── vector_db_manager.py  # ChromaDB operations
-│   │   ├── azure_files_manager.py # Azure Files integration
-│   │   └── azure_blob_manager.py  # Azure Blob Storage integration
-│   ├── main.py                  # FastAPI application
-│   └── .env                     # Backend environment variables
-├── .env.local                   # Frontend environment variables
-├── AZURE_FILES_SETUP.md         # Azure integration guide
-├── package.json                 # Frontend dependencies
-└── README.md                    # This file
+│   │   ├── document_processor.py    # Text extraction
+│   │   ├── vector_db_manager.py     # ChromaDB operations
+│   │   ├── azure_files_manager.py   # Azure Files integration
+│   │   └── azure_blob_manager.py    # Azure Blob integration
+│   ├── uploaded_docs/       # Local document storage
+│   └── chroma_db/          # ChromaDB persistence
+└── frontend/               # Frontend application (if applicable)
 ```
 
-## 🎨 Customization
+### Adding New Features
 
-### Theme Configuration
+1. Document processors for new file types in `utils/document_processor.py`
+2. New API endpoints in `main.py`
+3. Additional Azure services in respective manager files
+4. Configuration updates in `config.py`
 
-The application uses CSS custom properties for theming. Modify `src/app/globals.css` to customize colors:
+## Troubleshooting
 
-```css
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-  /* Add more custom variables */
-}
-```
+### Common Issues
 
-### UI Components
+1. **Memory Issues**: Use memory cleanup endpoint or reduce batch sizes
+2. **Azure Connection**: Check connection strings and network connectivity
+3. **Model Loading**: Ensure sufficient disk space for model downloads
+4. **CORS Issues**: Verify CORS configuration for frontend integration
 
-All UI components are located in `src/components/ui/` and can be customized using the shadcn/ui CLI:
+### Logs and Debugging
 
-```bash
-npx shadcn-ui@latest add [component-name]
-```
+- Enable debug logging by setting log level in the application
+- Use `/debug/chromadb` endpoint to inspect vector database
+- Check `/system/status` for overall system health
 
-## 📱 Usage
+## Performance Optimization
 
-1. **Starting a conversation**: Type your question in the input field
-2. **Sending messages**: Press Enter or click the send button
-3. **Multi-line messages**: Use Shift + Enter for new lines
-4. **Auto-scroll**: Chat automatically scrolls to the latest message
+- Use smaller embedding models for faster processing
+- Adjust batch sizes based on available memory
+- Consider using Azure services for better scalability
+- Implement caching for frequently accessed documents
 
-## 🔮 Future Enhancements
+## Security Considerations
 
-- [ ] User authentication and sessions
-- [ ] Chat history persistence
-- [ ] Multiple file format support (Word, Excel, etc.)
-- [ ] Voice input/output capabilities
-- [ ] Multi-language support
-- [ ] Admin dashboard for document management
-- [ ] Analytics and usage monitoring
-- [ ] Custom AI model fine-tuning
-- [ ] Real-time collaboration features
-- [ ] Mobile app development
+- Store API keys securely in environment variables
+- Restrict CORS origins in production
+- Use Azure managed identities when possible
+- Implement rate limiting for production deployments
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Make changes with appropriate tests
+4. Submit a pull request with detailed description
 
-### Development Guidelines
+## License
 
-- Follow TypeScript best practices for frontend
-- Use proper Python type hints for backend
-- Add tests for new features
-- Update documentation for new functionality
-- Follow existing code style and conventions
+[Add your license information here]
 
-## 📄 License
+## Support
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support
-
-If you encounter any issues or have questions:
-
-1. Check the [Issues](https://github.com/Chetancj121212/collegegpt_frontend/issues) page
-2. Review the troubleshooting section above
-3. Create a new issue with detailed information
-4. Include error logs and system information
-
-## 🏆 Acknowledgments
-
-- **Google Gemini AI** - For providing the language model
-- **shadcn/ui** - For the beautiful UI components
-- **ChromaDB** - For vector database capabilities
-- **FastAPI** - For the robust backend framework
-- **Next.js** - For the excellent frontend framework
-
-## 🔗 Useful Links
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [FastAPI Documentation](https://fastapi.tiangolo.com/)
-- [shadcn/ui Documentation](https://ui.shadcn.com)
-- [Google Gemini AI](https://ai.google.dev/)
-- [ChromaDB Documentation](https://docs.trychroma.com/)
-- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
-
----
-
-**Built with ❤️ for Medicaps**
+For issues and questions:
+- Check the API documentation at `/docs`
+- Review system status at `/system/status`
+- Use debug endpoints for troubleshooting

@@ -1,5 +1,4 @@
 import os
-import shutil
 import tempfile
 import gc
 from dotenv import load_dotenv
@@ -146,35 +145,19 @@ async def root():
 @app.get("/health")
 async def health_check():
     """
-    Health check endpoint for monitoring with memory usage.
+    Health check endpoint for monitoring.
     """
-    try:
-        import psutil
-        process = psutil.Process()
-        memory_info = process.memory_info()
-        memory_mb = memory_info.rss / 1024 / 1024  # Convert to MB
-        
-        return {
-            "status": "healthy",
-            "memory_usage_mb": round(memory_mb, 2),
-            "memory_percent": round(process.memory_percent(), 2),
-            "azure_files_enabled": azure_files_manager is not None,
-            "azure_blob_enabled": azure_blob_manager is not None,
-            "gemini_configured": bool(GEMINI_API_KEY),
-            "models_loaded": {
-                "embedding_model": embedding_model is not None,
-                "gemini_model": gemini_model is not None,
-                "db_manager": db_manager is not None
-            }
+    return {
+        "status": "healthy",
+        "azure_files_enabled": azure_files_manager is not None,
+        "azure_blob_enabled": azure_blob_manager is not None,
+        "gemini_configured": bool(GEMINI_API_KEY),
+        "models_loaded": {
+            "embedding_model": embedding_model is not None,
+            "gemini_model": gemini_model is not None,
+            "db_manager": db_manager is not None
         }
-    except ImportError:
-        return {
-            "status": "healthy",
-            "memory_usage_mb": "unavailable",
-            "azure_files_enabled": azure_files_manager is not None,
-            "azure_blob_enabled": azure_blob_manager is not None,
-            "gemini_configured": bool(GEMINI_API_KEY)
-        }
+    }
 
 @app.post("/memory/cleanup")
 async def cleanup_memory():
@@ -186,37 +169,21 @@ async def cleanup_memory():
     # Force garbage collection
     gc.collect()
     
-    # Optionally clear models (they will be reloaded when needed)
+    # Clear models (they will be reloaded when needed)
     models_cleared = []
     
-    try:
-        import psutil
-        process = psutil.Process()
-        memory_before = process.memory_info().rss / 1024 / 1024
-        
-        # Clear embedding model if loaded
-        if embedding_model is not None:
-            embedding_model = None
-            models_cleared.append("embedding_model")
-        
-        gc.collect()
-        
-        memory_after = process.memory_info().rss / 1024 / 1024
-        memory_freed = memory_before - memory_after
-        
-        return {
-            "message": "Memory cleanup completed",
-            "models_cleared": models_cleared,
-            "memory_freed_mb": round(memory_freed, 2),
-            "memory_before_mb": round(memory_before, 2),
-            "memory_after_mb": round(memory_after, 2)
-        }
-    except ImportError:
-        return {
-            "message": "Memory cleanup completed",
-            "models_cleared": models_cleared,
-            "memory_info": "unavailable"
-        }
+    # Clear embedding model if loaded
+    if embedding_model is not None:
+        embedding_model = None
+        models_cleared.append("embedding_model")
+    
+    # Force another garbage collection after clearing models
+    gc.collect()
+    
+    return {
+        "message": "Memory cleanup completed",
+        "models_cleared": models_cleared
+    }
 
 @app.post("/upload_document/")
 async def upload_document(file: UploadFile = File(...)):
