@@ -2,7 +2,6 @@ import os
 import shutil
 import tempfile
 import gc
-import psutil
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
@@ -556,6 +555,9 @@ async def sync_azure_blobs():
     try:
         print("Starting Azure Blob Storage sync...")
         
+        # Get database manager
+        db_manager = get_db_manager()
+        
         # Get all blobs from Azure Storage
         blobs = azure_blob_manager.list_blobs()
         processed_count = 0
@@ -683,6 +685,9 @@ async def sync_azure_files():
     try:
         print("Starting Azure Files sync...")
         
+        # Get database manager
+        db_manager = get_db_manager()
+        
         # Sync all PDFs to vector database
         azure_files_manager.sync_all_pdfs_to_vector_db(
             vector_db_manager=db_manager,
@@ -796,6 +801,7 @@ async def debug_chromadb():
     Debug endpoint to inspect ChromaDB contents.
     """
     try:
+        db_manager = get_db_manager()
         result = db_manager.collection.get()
         
         # Group by source
