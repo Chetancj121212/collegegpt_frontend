@@ -8,13 +8,17 @@ CHROMA_DB_SETTINGS = {
 }
 
 # Embedding batch settings
-EMBEDDING_BATCH_SIZE = 3  # Smaller batches for memory efficiency
-MAX_CHUNKS_PER_DOCUMENT = 50  # Limit chunks per document
+EMBEDDING_BATCH_SIZE = 2  # Process only 2 chunks at a time
+MAX_CHUNKS_PER_DOCUMENT = 20  # Limit chunks per document
 
 # Memory thresholds (in MB)
-MEMORY_WARNING_THRESHOLD = 400  # Warning at 400MB
-MEMORY_CRITICAL_THRESHOLD = 480  # Critical at 480MB
+MEMORY_WARNING_THRESHOLD = 400  # 400MB warning
+MEMORY_CRITICAL_THRESHOLD = 480  # 480MB critical (close to 512MB limit)
 
 # Sentence transformer model settings
-EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"  # Smallest efficient model
+EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"  # ~90MB instead of larger models
 EMBEDDING_DEVICE = "cpu"  # Force CPU usage to save memory
+
+# Text chunking settings for smaller chunks
+CHUNK_SIZE = 500  # Smaller chunks
+CHUNK_OVERLAP = 50

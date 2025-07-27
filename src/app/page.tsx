@@ -67,7 +67,7 @@ export default function Home() {
       formData.append('query', currentInput);
 
       // Call your FastAPI backend
-      const response = await fetch(`${API_URL}/chat/`, {
+      const response = await fetch(`${API_URL}/chat_simple/`, {
         method: 'POST',
         body: formData,
       });

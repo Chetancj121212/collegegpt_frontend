@@ -84,6 +84,49 @@ class VectorDBManager:
         result = self.collection.count()
         return result
     
+    def similarity_search(self, query_embedding: List[float], top_k: int = 5) -> List[Dict]:
+        """
+        Performs similarity search and returns documents with metadata in the format expected by main.py.
+        
+        Args:
+            query_embedding (List[float]): The embedding of the user's query.
+            top_k (int): The number of top relevant documents to retrieve.
+            
+        Returns:
+            List[Dict]: List of documents, each containing 'content' and 'metadata' keys.
+        """
+        try:
+            results = self.collection.query(
+                query_embeddings=[query_embedding],
+                n_results=top_k
+            )
+            
+            documents_with_metadata = []
+            if results and results['documents']:
+                documents = results['documents'][0]
+                metadatas = results.get('metadatas', [[]])[0]
+                distances = results.get('distances', [[]])[0]
+                
+                print(f"📊 Similarity search returned {len(documents)} documents:")
+                for i, (doc, metadata, distance) in enumerate(zip(documents, metadatas, distances)):
+                    filename = metadata.get('filename', 'Unknown')
+                    source = metadata.get('source', 'Unknown')
+                    print(f"  {i+1}. {filename} (source: {source}, distance: {distance:.4f})")
+                    
+                    documents_with_metadata.append({
+                        'content': doc,
+                        'metadata': metadata,
+                        'distance': distance
+                    })
+            else:
+                print("📊 No relevant documents found in ChromaDB")
+            
+            return documents_with_metadata
+            
+        except Exception as e:
+            print(f"Error in similarity search: {e}")
+            return []
+
     def get_documents_by_source(self, source: str) -> List[Dict]:
         """
         Get all documents from a specific source.
