@@ -1,41 +1,91 @@
-# College Bot - AI-Powered Document Q&A System
+# College Assistant - AI-Powered Document Q&A System
 
-A FastAPI-based chatbot that uses RAG (Retrieval-Augmented Generation) to answer questions based on uploaded documents. The system supports PDF and PPTX files, uses ChromaDB for vector storage, and integrates with Azure services for scalable document storage.
+A full-stack RAG (Retrieval-Augmented Generation) application that allows users to chat with their documents using AI. The system features a modern Next.js frontend and a robust FastAPI backend with vector database integration.
 
-## Features
+## 🚀 Features
 
-- **Document Upload & Processing**: Upload PDF and PPTX files with automatic text extraction and chunking
-- **Vector Database**: ChromaDB for efficient similarity search and document retrieval
-- **AI-Powered Chat**: Google Gemini integration for intelligent responses
-- **Azure Integration**: 
+- **🔄 Real-time Chat Interface**: Modern chat UI with typing indicators and auto-scroll
+- **📁 Document Upload & Processing**: Support for PDF and PPTX files with automatic text extraction
+- **🔍 Intelligent Document Search**: Vector-based similarity search using ChromaDB
+- **🤖 AI-Powered Responses**: Google Gemini integration for intelligent, context-aware answers
+- **☁️ Azure Cloud Integration**: 
   - Azure Blob Storage for uploaded documents
   - Azure Files for existing document collections
-- **Memory Optimization**: Lazy loading of models and memory management endpoints
-- **RESTful API**: Complete FastAPI backend with CORS support
+- **⚡ Memory Optimization**: Lazy loading of models and automatic memory management
+- **📱 Responsive Design**: Mobile-friendly interface with Tailwind CSS
+- **🔒 Type Safety**: Full TypeScript support across the frontend
 
-## Architecture
+## 🏗️ Tech Stack
+
+### Frontend
+- **Framework**: Next.js 14+ with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **UI Components**: Custom components using Radix UI primitives
+  - Button, Input, Card, ScrollArea, etc.
+- **Icons**: Lucide React
+- **State Management**: React Hooks (useState, useRef, useEffect)
+- **HTTP Client**: Native Fetch API
+
+### Backend
+- **Framework**: FastAPI (Python)
+- **Language**: Python 3.13
+- **AI/ML Stack**:
+  - Google Gemini API for text generation
+  - Google Generative AI for embeddings
+  - Sentence Transformers for document vectorization
+- **Vector Database**: ChromaDB for storing and querying document embeddings
+- **Document Processing**: 
+  - PyPDF2 for PDF text extraction
+  - python-pptx for PowerPoint processing
+- **File Handling**: FastAPI's UploadFile with multipart form support
+
+### Cloud Services
+- **Azure Blob Storage**: Document storage and management
+- **Azure Files**: Integration with existing document repositories
+- **Google AI Platform**: Gemini API for natural language processing
+
+### Development Tools
+- **Package Management**: npm/yarn (frontend), pip (backend)
+- **Build System**: Next.js built-in bundler
+- **Environment**: Hot reload for both frontend and backend
+
+## 🏛️ Architecture
 
 ```
-Frontend (React/HTML) → FastAPI Backend → ChromaDB (Vector DB)
-                                     ↓
-                              Google Gemini API
-                                     ↓
-                              Azure Storage Services
+┌─────────────────┐    HTTP/REST     ┌─────────────────┐
+│   Next.js App   │ ───────────────► │  FastAPI Server │
+│   (Frontend)    │                  │   (Backend)     │
+└─────────────────┘                  └─────────────────┘
+                                              │
+                                              ▼
+┌─────────────────┐                  ┌─────────────────┐
+│  Google Gemini  │ ◄────────────────┤   ChromaDB      │
+│      API        │                  │ (Vector Store)  │
+└─────────────────┘                  └─────────────────┘
+                                              │
+                                              ▼
+                                     ┌─────────────────┐
+                                     │ Azure Storage   │
+                                     │ (Blob + Files)  │
+                                     └─────────────────┘
 ```
 
-## Prerequisites
+## 📋 Prerequisites
 
-- Python 3.8+
-- Google Gemini API key
-- Azure Storage Account (optional but recommended)
-- Git
+- **Node.js** 18+ and npm/yarn (for frontend)
+- **Python** 3.8+ (for backend)
+- **Google Gemini API key** (required)
+- **Azure Storage Account** (optional but recommended)
+- **Git** for version control
 
-## Installation
+## 🚀 Quick Start
 
-1. **Clone the repository**
+### Backend Setup
+
+1. **Navigate to backend directory**
    ```bash
-   git clone <your-repo-url>
-   cd college_bot
+   cd backend
    ```
 
 2. **Create virtual environment**
@@ -44,9 +94,8 @@ Frontend (React/HTML) → FastAPI Backend → ChromaDB (Vector DB)
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
-3. **Install dependencies**
+3. **Install Python dependencies**
    ```bash
-   cd backend
    pip install -r requirements.txt
    ```
 
@@ -56,175 +105,263 @@ Frontend (React/HTML) → FastAPI Backend → ChromaDB (Vector DB)
    # Required
    GEMINI_API_KEY=your_gemini_api_key_here
    
-   # Optional - Azure Blob Storage (for uploaded documents)
+   # Optional - Azure Blob Storage
    AZURE_BLOB_CONNECTION_STRING=your_azure_blob_connection_string
    AZURE_BLOB_CONTAINER_NAME=uploaded-documents
    
-   # Optional - Azure Files (for existing document collections)
+   # Optional - Azure Files
    AZURE_STORAGE_CONNECTION_STRING=your_azure_files_connection_string
    AZURE_FILES_SHARE_NAME=college-documents
    ```
 
-## Configuration
-
-The application uses several configuration parameters defined in `config.py`:
-
-- `EMBEDDING_MODEL_NAME`: Sentence transformer model for embeddings
-- `EMBEDDING_BATCH_SIZE`: Batch size for processing embeddings
-- `MAX_CHUNKS_PER_DOCUMENT`: Maximum chunks per document to manage memory
-- `MEMORY_WARNING_THRESHOLD`: Memory usage warning threshold
-- `MEMORY_CRITICAL_THRESHOLD`: Critical memory usage threshold
-
-## Usage
-
-1. **Start the backend server**
+5. **Start the backend server**
    ```bash
-   cd backend
-   python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
+   python main.py
+   # or
+   uvicorn main:app --reload --host 0.0.0.0 --port 8000
    ```
 
-2. **Access the API**
-   - API Base URL: `http://localhost:8000`
-   - Health Check: `http://localhost:8000/health`
+### Frontend Setup
+
+1. **Navigate to project root and install dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+2. **Configure environment variables**
+   Create a `.env.local` file in the root directory:
+   ```env
+   NEXT_PUBLIC_API_URL=http://localhost:8000
+   ```
+
+3. **Start the development server**
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
+
+4. **Access the application**
+   - Frontend: `http://localhost:3000`
+   - Backend API: `http://localhost:8000`
    - API Documentation: `http://localhost:8000/docs`
 
-## API Endpoints
+## 📁 Project Structure
 
-### Core Endpoints
-
-- `GET /` - Root endpoint with API status
-- `GET /health` - Health check with system status
-- `POST /upload_document/` - Upload and process documents
-- `POST /chat/` - Chat with the AI using uploaded documents
-- `POST /memory/cleanup` - Force memory cleanup
-
-### Document Management
-
-- `GET /uploaded_documents/` - List all uploaded documents
-- `DELETE /uploaded_documents/{filename}` - Delete a specific document
-- `POST /sync_azure_blobs/` - Sync Azure Blob Storage documents
-- `POST /sync_azure_files/` - Sync Azure Files documents
-
-### System Status
-
-- `GET /system/status` - Complete system status
-- `GET /azure_files/list` - List Azure Files documents
-- `GET /debug/chromadb` - Debug ChromaDB contents
-
-## Document Processing Pipeline
-
-1. **Upload**: Document uploaded via `/upload_document/`
-2. **Storage**: Stored in Azure Blob (or locally as fallback)
-3. **Text Extraction**: Extract text from PDF/PPTX
-4. **Chunking**: Split text into manageable chunks
-5. **Embedding**: Generate vector embeddings using Sentence Transformers
-6. **Storage**: Store embeddings and metadata in ChromaDB
-
-## Chat Flow
-
-1. **Query**: User sends question via `/chat/`
-2. **Embedding**: Generate embedding for user query
-3. **Retrieval**: Find relevant document chunks using similarity search
-4. **Generation**: Generate response using Google Gemini with retrieved context
-5. **Response**: Return AI-generated answer to user
-
-## Memory Management
-
-The application includes several memory optimization features:
-
-- **Lazy Loading**: Models loaded only when needed
-- **Batch Processing**: Embeddings processed in configurable batches
-- **Garbage Collection**: Automatic cleanup after operations
-- **Memory Cleanup Endpoint**: Manual memory management via API
-
-## Azure Integration
-
-### Azure Blob Storage
-- Stores uploaded documents with automatic retry mechanism
-- Supports document synchronization to vector database
-- Fallback to local storage if Azure is unavailable
-
-### Azure Files
-- Integration with existing document collections
-- Bulk PDF processing and synchronization
-- Support for large document repositories
-
-## Error Handling
-
-- Comprehensive error handling with detailed HTTP responses
-- Automatic cleanup of temporary files
-- Retry mechanisms for Azure operations
-- Graceful fallback to local storage
-
-## Development
-
-### Project Structure
 ```
 college_bot/
-├── backend/
-│   ├── main.py              # FastAPI application
-│   ├── config.py            # Configuration settings
-│   ├── requirements.txt     # Python dependencies
+├── 📁 frontend/
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── page.tsx              # Main chat interface
+│   │   │   ├── layout.tsx            # App layout
+│   │   │   └── globals.css           # Global styles
+│   │   ├── components/
+│   │   │   └── ui/                   # Reusable UI components
+│   │   └── lib/
+│   │       └── utils.ts              # Utility functions
+│   ├── package.json                  # Frontend dependencies
+│   └── tailwind.config.js           # Tailwind configuration
+├── 📁 backend/
+│   ├── main.py                      # FastAPI application
+│   ├── config.py                    # Configuration settings
+│   ├── requirements.txt             # Python dependencies
 │   ├── utils/
-│   │   ├── document_processor.py    # Text extraction
+│   │   ├── document_processor.py    # Text extraction & chunking
 │   │   ├── vector_db_manager.py     # ChromaDB operations
 │   │   ├── azure_files_manager.py   # Azure Files integration
 │   │   └── azure_blob_manager.py    # Azure Blob integration
-│   ├── uploaded_docs/       # Local document storage
-│   └── chroma_db/          # ChromaDB persistence
-└── frontend/               # Frontend application (if applicable)
+│   ├── uploaded_docs/               # Local document storage
+│   └── chroma_db/                   # ChromaDB persistence
+├── README.md                        # This file
+├── next.config.ts                   # Next.js configuration
+└── tsconfig.json                    # TypeScript configuration
+```
+
+## 🔌 API Endpoints
+
+### 💬 Chat Endpoints
+- `POST /chat/` - Chat with JSON input (ChatRequest model)
+- `POST /chat_simple/` - Chat with form data input
+- Both endpoints support RAG-based responses using uploaded documents
+
+### 📄 Document Management
+- `POST /upload_document/` - Upload and process PDF/PPTX files
+- `GET /uploaded_documents/` - List all uploaded documents
+- `DELETE /uploaded_documents/{filename}` - Delete specific document
+
+### ☁️ Azure Integration
+- `POST /sync_azure_blobs/` - Sync Azure Blob Storage documents
+- `POST /sync_azure_files/` - Sync Azure Files documents
+- `GET /azure_files/list` - List Azure Files documents
+
+### 🔧 System & Health
+- `GET /` - Root endpoint with API status
+- `GET /health` - Health check with system status
+- `POST /memory/cleanup` - Force memory cleanup
+- `GET /system/status` - Complete system status
+- `GET /debug/chromadb` - Debug ChromaDB contents
+
+## 🔄 Document Processing Pipeline
+
+1. **📤 Upload**: User uploads document via frontend interface
+2. **💾 Storage**: Document stored in Azure Blob (or locally as fallback)
+3. **📝 Text Extraction**: Extract text content from PDF/PPTX files
+4. **✂️ Chunking**: Split text into manageable, overlapping chunks
+5. **🧮 Embedding**: Generate vector embeddings using Google's embedding model
+6. **🗄️ Storage**: Store embeddings and metadata in ChromaDB
+7. **🔍 Indexing**: Ready for similarity search and retrieval
+
+## 💬 Chat Flow
+
+1. **❓ Query**: User types question in the chat interface
+2. **🔄 Processing**: Frontend sends query to `/chat_simple/` endpoint
+3. **🧮 Embedding**: Backend generates embedding for user query
+4. **🔍 Retrieval**: ChromaDB performs similarity search for relevant chunks
+5. **🤖 Generation**: Google Gemini generates response using retrieved context
+6. **📤 Response**: AI-generated answer displayed in chat interface
+7. **📊 Metadata**: Include sources and confidence information
+
+## ⚙️ Configuration
+
+### Backend Configuration (`config.py`)
+- `EMBEDDING_MODEL_NAME`: Model for generating document embeddings
+- `EMBEDDING_BATCH_SIZE`: Batch size for processing embeddings
+- `MAX_CHUNKS_PER_DOCUMENT`: Maximum chunks per document (memory management)
+- `MEMORY_WARNING_THRESHOLD`: Memory usage warning threshold
+- `MEMORY_CRITICAL_THRESHOLD`: Critical memory usage threshold
+
+### Frontend Configuration
+- `NEXT_PUBLIC_API_URL`: Backend API base URL
+- Tailwind CSS for styling configuration
+- TypeScript strict mode enabled
+
+## 🛠️ Development
+
+### Frontend Development
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Start production server
+npm start
+```
+
+### Backend Development
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Start with auto-reload
+uvicorn main:app --reload
+
+# Run with specific host/port
+python main.py
 ```
 
 ### Adding New Features
 
-1. Document processors for new file types in `utils/document_processor.py`
-2. New API endpoints in `main.py`
-3. Additional Azure services in respective manager files
-4. Configuration updates in `config.py`
+1. **New File Types**: Extend `document_processor.py` with new extractors
+2. **UI Components**: Add components to `src/components/ui/`
+3. **API Endpoints**: Add new routes in `main.py`
+4. **Azure Services**: Extend manager classes in `utils/`
 
-## Troubleshooting
+## 🔍 Troubleshooting
 
-### Common Issues
+### Common Frontend Issues
+- **API Connection**: Verify `NEXT_PUBLIC_API_URL` in `.env.local`
+- **CORS Errors**: Check backend CORS configuration
+- **Build Errors**: Ensure TypeScript types are correct
 
-1. **Memory Issues**: Use memory cleanup endpoint or reduce batch sizes
-2. **Azure Connection**: Check connection strings and network connectivity
-3. **Model Loading**: Ensure sufficient disk space for model downloads
-4. **CORS Issues**: Verify CORS configuration for frontend integration
+### Common Backend Issues
+- **Memory Issues**: Use `/memory/cleanup` endpoint or reduce batch sizes
+- **Azure Connection**: Verify connection strings and network access
+- **Model Loading**: Ensure sufficient disk space for model downloads
+- **ChromaDB Issues**: Check database permissions and storage path
 
-### Logs and Debugging
+### Debugging Tools
+- Frontend: Browser DevTools, React DevTools
+- Backend: FastAPI automatic docs at `/docs`
+- System: Use `/debug/chromadb` and `/system/status` endpoints
 
-- Enable debug logging by setting log level in the application
-- Use `/debug/chromadb` endpoint to inspect vector database
-- Check `/system/status` for overall system health
+## 🚀 Deployment
 
-## Performance Optimization
+### Frontend Deployment (Vercel/Netlify)
+```bash
+npm run build
+# Deploy the .next or dist folder
+```
 
-- Use smaller embedding models for faster processing
-- Adjust batch sizes based on available memory
-- Consider using Azure services for better scalability
-- Implement caching for frequently accessed documents
+### Backend Deployment (Docker)
+```dockerfile
+FROM python:3.11-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
 
-## Security Considerations
+### Environment Variables for Production
+```env
+# Frontend
+NEXT_PUBLIC_API_URL=https://your-backend-url.com
 
-- Store API keys securely in environment variables
-- Restrict CORS origins in production
+# Backend
+GEMINI_API_KEY=your_production_key
+AZURE_BLOB_CONNECTION_STRING=your_production_string
+CORS_ORIGINS=https://your-frontend-url.com
+```
+
+## 📊 Performance Optimization
+
+- **Frontend**: Next.js automatic code splitting and optimization
+- **Backend**: Lazy loading of AI models and batch processing
+- **Database**: ChromaDB efficient vector similarity search
+- **Memory**: Automatic cleanup and configurable batch sizes
+- **Azure**: CDN integration for document delivery
+
+## 🔒 Security Best Practices
+
+- Store API keys in environment variables, never in code
+- Configure CORS origins for production deployment
 - Use Azure managed identities when possible
-- Implement rate limiting for production deployments
+- Implement rate limiting for production APIs
+- Validate file uploads and sanitize inputs
 
-## Contributing
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make changes with appropriate tests
-4. Submit a pull request with detailed description
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## License
+## 📄 License
 
-[Add your license information here]
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Support
+## 📞 Support
 
-For issues and questions:
-- Check the API documentation at `/docs`
-- Review system status at `/system/status`
-- Use debug endpoints for troubleshooting
+- **Issues**: Create an issue on GitHub
+- **API Documentation**: Visit `/docs` when backend is running
+- **System Status**: Check `/system/status` endpoint
+- **Debug Info**: Use `/debug/chromadb` for database insights
+
+## 🔮 Future Enhancements
+
+- [ ] WebSocket support for real-time chat
+- [ ] Multi-language document support
+- [ ] Advanced search filters and sorting
+- [ ] User authentication and document permissions
+- [ ] Conversation history and memory
+- [ ] Mobile app using React Native
+- [ ] Advanced analytics and usage tracking
