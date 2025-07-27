@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Upload, FileText } from "lucide-react";
+import { Send, Upload, FileText, Cloud, RefreshCw } from "lucide-react";
 
 interface Message {
   id: string;
@@ -20,7 +20,7 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
-      content: "Hello! I'm your college assistant. How can I help you today? You can ask me questions or upload documents (PDF/PPTX) for me to learn from.",
+      content: "Hello! I'm your college assistant. How can I help you today? You can ask me questions, upload documents (PDF/PPTX), or sync documents from Azure Files.",
       role: "assistant",
       timestamp: new Date(),
     },
@@ -28,6 +28,8 @@ export default function Home() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [isSyncingBlobs, setIsSyncingBlobs] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -175,6 +177,100 @@ export default function Home() {
     fileInputRef.current?.click();
   };
 
+  const handleAzureSync = async () => {
+    setIsSyncing(true);
+    
+    // Add sync message
+    const syncMessage: Message = {
+      id: Date.now().toString(),
+      content: "🔄 Syncing documents from Azure Files...",
+      role: "assistant",
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, syncMessage]);
+
+    try {
+      const response = await fetch(`${API_URL}/sync_azure_files/`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      const successMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: `✅ ${data.message} You can now ask questions about all the documents stored in Azure Files.`,
+        role: "assistant",
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, successMessage]);
+    } catch (error) {
+      console.error('Error syncing Azure Files:', error);
+      
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "❌ Sorry, there was an error syncing documents from Azure Files. Please make sure Azure Files is properly configured and the backend server is running.",
+        role: "assistant",
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleAzureBlobSync = async () => {
+    setIsSyncingBlobs(true);
+    
+    // Add sync message
+    const syncMessage: Message = {
+      id: Date.now().toString(),
+      content: "🔄 Syncing uploaded documents from Azure Blob Storage...",
+      role: "assistant",
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, syncMessage]);
+
+    try {
+      const response = await fetch(`${API_URL}/sync_azure_blobs/`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      const successMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: `✅ ${data.message} You can now ask questions about all uploaded documents.`,
+        role: "assistant",
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, successMessage]);
+    } catch (error) {
+      console.error('Error syncing Azure blobs:', error);
+      
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "❌ Sorry, there was an error syncing documents from Azure Blob Storage. Please make sure the backend server is running.",
+        role: "assistant",
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsSyncingBlobs(false);
+    }
+  };
+
   const getDummyResponse = (input: string): string => {
     const responses = [
       "I understand you're asking about: " + input + ". Let me help you with that!",
@@ -195,13 +291,51 @@ export default function Home() {
   return (
     <div className="flex flex-col h-screen bg-transparent text-foreground">
       {/* Header */}
-      <div className="border-b border-border p-4">
+      <div className=" p-4">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-semibold">College Assistant</h1>
             <p className="text-sm text-muted-foreground">Your AI-powered college information bot</p>
           </div>
           <div className="flex items-center space-x-2">
+            <Button
+              onClick={handleAzureSync}
+              disabled={isSyncing}
+              variant="outline"
+              size="sm"
+              className="flex items-center space-x-2"
+            >
+              {isSyncing ? (
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  <span>Syncing...</span>
+                </>
+              ) : (
+                <>
+                  <Cloud className="h-4 w-4" />
+                  <span>Sync Azure Files</span>
+                </>
+              )}
+            </Button>
+            <Button
+              onClick={handleAzureBlobSync}
+              disabled={isSyncingBlobs}
+              variant="outline"
+              size="sm"
+              className="flex items-center space-x-2"
+            >
+              {isSyncingBlobs ? (
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  <span>Syncing...</span>
+                </>
+              ) : (
+                <>
+                  <Upload className="h-4 w-4" />
+                  <span>Sync Uploads</span>
+                </>
+              )}
+            </Button>
             <Button
               onClick={handleUploadClick}
               disabled={isUploading}
@@ -279,13 +413,13 @@ export default function Home() {
       </div>
 
       {/* Input Area */}
-      <div className="border-t border-border p-4">
+      <div className=" p-4">
         <div className="max-w-4xl mx-auto">
           <div className="flex space-x-2">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyPress}
               placeholder="Ask me anything about college..."
               className="flex-1"
               disabled={isLoading}
@@ -299,7 +433,7 @@ export default function Home() {
             </Button>
           </div>
           <p className="text-xs text-muted-foreground mt-2 text-center">
-            Press Enter to send, Shift + Enter for new line • Upload PDF/PPTX documents using the upload button
+            Press Enter to send, Shift + Enter for new line • Upload documents or sync from Azure Files
           </p>
         </div>
       </div>

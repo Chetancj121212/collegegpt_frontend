@@ -6,6 +6,8 @@ A modern, AI-powered college assistant chatbot built with Next.js and shadcn/ui 
 
 - **Full-screen chat interface** - Gemini-like design for optimal user experience
 - **Document upload support** - Upload PDF and PPTX files for AI to learn from
+- **Azure Files integration** - Sync documents from Azure Files storage
+- **Azure Blob Storage** - Automatic backup of uploaded documents
 - **Real-time messaging** - Instant responses powered by Google Gemini AI
 - **RAG (Retrieval Augmented Generation)** - AI answers based on uploaded documents
 - **Dark/Light theme support** - Automatic theme detection and switching
@@ -28,6 +30,7 @@ A modern, AI-powered college assistant chatbot built with Next.js and shadcn/ui 
 - **Embeddings**: Sentence Transformers (all-MiniLM-L6-v2)
 - **Vector Database**: ChromaDB
 - **Document Processing**: pypdf, python-pptx
+- **Cloud Storage**: Azure Files & Azure Blob Storage
 
 ## 📦 Installation & Setup
 
@@ -90,6 +93,14 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 #### Backend (.env)
 ```env
 GEMINI_API_KEY=your_actual_gemini_api_key_here
+
+# Azure Files Configuration (optional - for document sync)
+AZURE_STORAGE_CONNECTION_STRING=your_azure_storage_connection_string
+AZURE_FILES_SHARE_NAME=your_file_share_name
+
+# Azure Blob Storage Configuration (optional - for document backup)
+AZURE_BLOB_CONNECTION_STRING=your_azure_blob_connection_string
+AZURE_BLOB_CONTAINER_NAME=uploaded-documents
 ```
 
 ### Gemini API Key Setup
@@ -98,6 +109,17 @@ GEMINI_API_KEY=your_actual_gemini_api_key_here
 2. Create a new API key
 3. Copy the key and add it to your backend `.env` file
 4. Replace `your_actual_gemini_api_key_here` with your key
+
+### Azure Integration Setup (Optional)
+
+For document storage and sync capabilities:
+
+1. **Azure Files Setup** - See [AZURE_FILES_SETUP.md](./AZURE_FILES_SETUP.md) for detailed instructions
+2. **Azure Blob Storage** - Automatically configured when Azure Files is set up
+3. **Benefits**: 
+   - Bulk document sync from cloud storage
+   - Automatic backup of uploaded documents
+   - Scalable document management
 
 ## 🚀 Running the Application
 
@@ -134,6 +156,8 @@ If you're using VS Code, the Python environment will be automatically configured
 
 - `POST /chat/` - Send chat messages to the AI
 - `POST /upload_document/` - Upload PDF or PPTX documents
+- `POST /sync_azure_files/` - Sync documents from Azure Files (if configured)
+- `POST /sync_azure_blobs/` - Sync uploaded documents from Azure Blob Storage
 
 ## 📱 Usage Guide
 
@@ -141,8 +165,10 @@ If you're using VS Code, the Python environment will be automatically configured
 2. **Sending messages**: Press Enter or click the send button
 3. **Multi-line messages**: Use Shift + Enter for new lines
 4. **Upload documents**: Click the "Upload Doc" button to add PDF/PPTX files
-5. **Document-based Q&A**: Ask questions about uploaded documents
-6. **Auto-scroll**: Chat automatically scrolls to the latest message
+5. **Sync Azure Files**: Click "Sync Azure Files" to import documents from Azure storage
+6. **Sync uploaded documents**: Click "Sync Uploads" to process uploaded documents
+7. **Document-based Q&A**: Ask questions about uploaded documents
+8. **Auto-scroll**: Chat automatically scrolls to the latest message
 
 ## 🔄 How RAG Works
 
@@ -194,16 +220,22 @@ college_bot/
 │   │   ├── globals.css          # Global styles
 │   │   ├── layout.tsx           # Root layout
 │   │   └── page.tsx             # Main chat interface
+│   ├── blocks/                  # Background components
+│   │   └── Backgrounds/
+│   │       └── Silk/            # Silk background animation
 │   ├── components/ui/           # shadcn/ui components
 │   └── lib/
 │       └── utils.ts             # Utility functions
 ├── backend/                     # Backend source code
 │   ├── utils/
 │   │   ├── document_processor.py # PDF/PPTX processing
-│   │   └── vector_db_manager.py  # ChromaDB operations
+│   │   ├── vector_db_manager.py  # ChromaDB operations
+│   │   ├── azure_files_manager.py # Azure Files integration
+│   │   └── azure_blob_manager.py  # Azure Blob Storage integration
 │   ├── main.py                  # FastAPI application
 │   └── .env                     # Backend environment variables
 ├── .env.local                   # Frontend environment variables
+├── AZURE_FILES_SETUP.md         # Azure integration guide
 ├── package.json                 # Frontend dependencies
 └── README.md                    # This file
 ```
@@ -298,4 +330,4 @@ If you encounter any issues or have questions:
 
 ---
 
-**Built with ❤️ for educational purposes**
+**Built with ❤️ for Medicaps**

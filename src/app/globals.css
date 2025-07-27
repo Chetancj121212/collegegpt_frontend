@@ -2,10 +2,10 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #ffffff;
 }
 
-@theme inline {
+:root {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -14,8 +14,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: rgb(243, 243, 243);
+    --foreground: #ebebeb;
   }
 }
 
@@ -23,4 +23,59 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Increase border widths by 2px for UI components */
+/* Card components */
+[data-slot="card"] {
+  border-width: 3px !important; /* Default 1px + 2px = 3px */
+}
+
+/* Button outline variant */
+button[data-slot="button"]:has(.border),
+.border button[data-slot="button"] {
+  border-width: 3px !important;
+}
+
+/* Input components */
+[data-slot="input"] {
+  border-width: 3px !important;
+}
+
+/* Textarea components */
+[data-slot="textarea"] {
+  border-width: 3px !important;
+}
+
+/* Select components */
+[data-slot="select-trigger"] {
+  border-width: 3px !important;
+}
+
+/* General border utilities (but exclude canvas elements) */
+.border:not(canvas):not([data-background-component]) {
+  border-width: 3px !important;
+}
+
+.border-t:not(canvas):not([data-background-component]) {
+  border-top-width: 3px !important;
+}
+
+.border-b:not(canvas):not([data-background-component]) {
+  border-bottom-width: 3px !important;
+}
+
+.border-l:not(canvas):not([data-background-component]) {
+  border-left-width: 3px !important;
+}
+
+.border-r:not(canvas):not([data-background-component]) {
+  border-right-width: 3px !important;
+}
+
+/* Specific UI component borders */
+.chat-interface .border,
+.header .border,
+.input-area .border {
+  border-width: 3px !important;
 }

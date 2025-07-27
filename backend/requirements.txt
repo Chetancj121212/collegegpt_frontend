@@ -7,3 +7,5 @@ chromadb
 sentence-transformers
 google-generativeai
 python-dotenv
+azure-storage-file-share
+azure-storage-blob

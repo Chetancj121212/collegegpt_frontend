@@ -1,4 +1,5 @@
 import chromadb
+import uuid
 from typing import List, Dict
 
 class VectorDBManager:
@@ -27,8 +28,8 @@ class VectorDBManager:
             metadatas (List[Dict]): A list of dictionaries, where each dictionary
                                     contains metadata for a corresponding text chunk.
         """
-        # Generate simple unique IDs for each document chunk
-        ids = [f"doc_{i}" for i in range(len(texts))]
+        # Generate unique IDs for each document chunk using UUID
+        ids = [str(uuid.uuid4()) for _ in range(len(texts))]
         self.collection.add(
             documents=texts,
             embeddings=embeddings,
@@ -54,7 +55,61 @@ class VectorDBManager:
             # You can add 'where' clause here if you want to filter by metadata
             # where={"filename": "your_file.pdf"}
         )
+        
+        # Log query results for debugging
+        if results and results['documents']:
+            documents = results['documents'][0]
+            metadatas = results.get('metadatas', [[]])[0]
+            distances = results.get('distances', [[]])[0]
+            
+            print(f"📊 Query returned {len(documents)} documents:")
+            for i, (doc, metadata, distance) in enumerate(zip(documents, metadatas, distances)):
+                filename = metadata.get('filename', 'Unknown')
+                source = metadata.get('source', 'Unknown')
+                print(f"  {i+1}. {filename} (source: {source}, distance: {distance:.4f})")
+        else:
+            print("📊 No relevant documents found in ChromaDB")
+        
         # Return the 'documents' field from the first (and only) query result
         # This will be a list of strings (the text chunks)
         return results['documents'][0] if results and results['documents'] else []
+    
+    def get_document_count(self) -> int:
+        """
+        Get the total number of documents in the collection.
+        
+        Returns:
+            int: Total number of document chunks stored.
+        """
+        result = self.collection.count()
+        return result
+    
+    def get_documents_by_source(self, source: str) -> List[Dict]:
+        """
+        Get all documents from a specific source.
+        
+        Args:
+            source (str): The source to filter by (e.g., 'user_upload', 'azure_files')
+            
+        Returns:
+            List[Dict]: List of documents with their metadata.
+        """
+        try:
+            results = self.collection.get(
+                where={"source": source}
+            )
+            
+            documents_info = []
+            if results and results['documents']:
+                for i, (doc, metadata) in enumerate(zip(results['documents'], results['metadatas'])):
+                    documents_info.append({
+                        'content': doc[:200] + "..." if len(doc) > 200 else doc,
+                        'metadata': metadata
+                    })
+            
+            return documents_info
+            
+        except Exception as e:
+            print(f"Error getting documents by source {source}: {e}")
+            return []
 
