@@ -38,7 +38,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True) # Create the directory if it doesn't e
 CHROMA_DB_PATH = "./chroma_db"
 
 # --- Initialize Services ---
-app = FastAPI() # Create FastAPI application instance
+app = FastAPI(title="College Bot API", description="FastAPI backend for College Chatbot with Azure integration") # Create FastAPI application instance
 
 # Configure Google Generative AI (Gemini) with the API key
 genai.configure(api_key=GEMINI_API_KEY)
@@ -98,6 +98,29 @@ def get_embedding(text: str) -> list[float]:
     return embedding_model.encode(text).tolist()
 
 # --- API Endpoints ---
+
+@app.get("/")
+async def root():
+    """
+    Root endpoint to verify the API is running.
+    """
+    return {
+        "message": "College Bot API is running!",
+        "status": "healthy",
+        "version": "1.0.0"
+    }
+
+@app.get("/health")
+async def health_check():
+    """
+    Health check endpoint for monitoring.
+    """
+    return {
+        "status": "healthy",
+        "azure_files_enabled": azure_files_manager is not None,
+        "azure_blob_enabled": azure_blob_manager is not None,
+        "gemini_configured": bool(GEMINI_API_KEY)
+    }
 
 @app.post("/upload_document/")
 async def upload_document(file: UploadFile = File(...)):

@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: college-bot-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: AZURE_STORAGE_CONNECTION_STRING
+        sync: false
+      - key: AZURE_FILES_SHARE_NAME
+        value: college-documents
+      - key: AZURE_BLOB_CONNECTION_STRING
+        sync: false
+      - key: AZURE_BLOB_CONTAINER_NAME
+        value: uploaded-documents
