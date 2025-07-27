@@ -3,10 +3,14 @@ services:
     name: college-bot-backend
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    startCommand: cd backend && python run.py
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
+      - key: PYTHONOPTIMIZE
+        value: "2"
+      - key: PYTHONUNBUFFERED
+        value: "1"
       - key: GEMINI_API_KEY
         sync: false
       - key: AZURE_STORAGE_CONNECTION_STRING

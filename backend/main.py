@@ -1,17 +1,25 @@
 import os
 import shutil
 import tempfile
+import gc
+import psutil
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
 import google.generativeai as genai
-from sentence_transformers import SentenceTransformer
 
 # Import custom utility modules
 from utils.document_processor import extract_text_from_pdf, extract_text_from_pptx, chunk_text
 from utils.vector_db_manager import VectorDBManager
 from utils.azure_files_manager import AzureFilesManager
 from utils.azure_blob_manager import AzureBlobManager
+from config import (
+    EMBEDDING_BATCH_SIZE, 
+    MAX_CHUNKS_PER_DOCUMENT, 
+    EMBEDDING_MODEL_NAME,
+    MEMORY_WARNING_THRESHOLD,
+    MEMORY_CRITICAL_THRESHOLD
+)
 
 # Load environment variables from .env file
 load_dotenv()
@@ -37,17 +45,39 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True) # Create the directory if it doesn't e
 # Define path for ChromaDB persistence
 CHROMA_DB_PATH = "./chroma_db"
 
+# Global variables for lazy loading
+embedding_model = None
+gemini_model = None
+db_manager = None
+
 # --- Initialize Services ---
 app = FastAPI(title="College Bot API", description="FastAPI backend for College Chatbot with Azure integration") # Create FastAPI application instance
 
 # Configure Google Generative AI (Gemini) with the API key
 genai.configure(api_key=GEMINI_API_KEY)
-# Initialize the Gemini model for text generation
-gemini_model = genai.GenerativeModel('gemini-1.5-flash')
-# Initialize the Sentence Transformer model for embeddings
-embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
-# Initialize the VectorDBManager for ChromaDB operations
-db_manager = VectorDBManager(db_path=CHROMA_DB_PATH)
+
+def get_embedding_model():
+    """Lazy load the embedding model to save memory."""
+    global embedding_model
+    if embedding_model is None:
+        from sentence_transformers import SentenceTransformer
+        # Use a smaller, more memory-efficient model
+        embedding_model = SentenceTransformer(EMBEDDING_MODEL_NAME, device='cpu')
+    return embedding_model
+
+def get_gemini_model():
+    """Lazy load the Gemini model."""
+    global gemini_model
+    if gemini_model is None:
+        gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+    return gemini_model
+
+def get_db_manager():
+    """Lazy load the database manager."""
+    global db_manager
+    if db_manager is None:
+        db_manager = VectorDBManager(db_path=CHROMA_DB_PATH)
+    return db_manager
 
 # Initialize Azure Files Manager (optional, only if connection string is provided)
 azure_files_manager = None
@@ -87,7 +117,7 @@ app.add_middleware(
 def get_embedding(text: str) -> list[float]:
     """
     Generates an embedding (vector representation) for the given text
-    using the Sentence Transformer model.
+    using the Sentence Transformer model with memory optimization.
 
     Args:
         text (str): The input text to embed.
@@ -95,7 +125,11 @@ def get_embedding(text: str) -> list[float]:
     Returns:
         list[float]: A list of floats representing the text embedding.
     """
-    return embedding_model.encode(text).tolist()
+    model = get_embedding_model()
+    embedding = model.encode(text).tolist()
+    # Force garbage collection after embedding generation
+    gc.collect()
+    return embedding
 
 # --- API Endpoints ---
 
@@ -113,14 +147,77 @@ async def root():
 @app.get("/health")
 async def health_check():
     """
-    Health check endpoint for monitoring.
+    Health check endpoint for monitoring with memory usage.
     """
-    return {
-        "status": "healthy",
-        "azure_files_enabled": azure_files_manager is not None,
-        "azure_blob_enabled": azure_blob_manager is not None,
-        "gemini_configured": bool(GEMINI_API_KEY)
-    }
+    try:
+        import psutil
+        process = psutil.Process()
+        memory_info = process.memory_info()
+        memory_mb = memory_info.rss / 1024 / 1024  # Convert to MB
+        
+        return {
+            "status": "healthy",
+            "memory_usage_mb": round(memory_mb, 2),
+            "memory_percent": round(process.memory_percent(), 2),
+            "azure_files_enabled": azure_files_manager is not None,
+            "azure_blob_enabled": azure_blob_manager is not None,
+            "gemini_configured": bool(GEMINI_API_KEY),
+            "models_loaded": {
+                "embedding_model": embedding_model is not None,
+                "gemini_model": gemini_model is not None,
+                "db_manager": db_manager is not None
+            }
+        }
+    except ImportError:
+        return {
+            "status": "healthy",
+            "memory_usage_mb": "unavailable",
+            "azure_files_enabled": azure_files_manager is not None,
+            "azure_blob_enabled": azure_blob_manager is not None,
+            "gemini_configured": bool(GEMINI_API_KEY)
+        }
+
+@app.post("/memory/cleanup")
+async def cleanup_memory():
+    """
+    Endpoint to force garbage collection and clear unused models.
+    """
+    global embedding_model, gemini_model, db_manager
+    
+    # Force garbage collection
+    gc.collect()
+    
+    # Optionally clear models (they will be reloaded when needed)
+    models_cleared = []
+    
+    try:
+        import psutil
+        process = psutil.Process()
+        memory_before = process.memory_info().rss / 1024 / 1024
+        
+        # Clear embedding model if loaded
+        if embedding_model is not None:
+            embedding_model = None
+            models_cleared.append("embedding_model")
+        
+        gc.collect()
+        
+        memory_after = process.memory_info().rss / 1024 / 1024
+        memory_freed = memory_before - memory_after
+        
+        return {
+            "message": "Memory cleanup completed",
+            "models_cleared": models_cleared,
+            "memory_freed_mb": round(memory_freed, 2),
+            "memory_before_mb": round(memory_before, 2),
+            "memory_after_mb": round(memory_after, 2)
+        }
+    except ImportError:
+        return {
+            "message": "Memory cleanup completed",
+            "models_cleared": models_cleared,
+            "memory_info": "unavailable"
+        }
 
 @app.post("/upload_document/")
 async def upload_document(file: UploadFile = File(...)):
@@ -227,9 +324,24 @@ async def upload_document(file: UploadFile = File(...)):
         if not chunks:
             raise HTTPException(status_code=500, detail="Could not chunk the document text.")
 
-        # Generate embeddings for each text chunk
+        # Generate embeddings for each text chunk with memory optimization
         print(f"🔄 Generating embeddings for {len(chunks)} chunks")
-        embeddings = [get_embedding(chunk) for chunk in chunks]
+        
+        # Limit chunks if too many
+        if len(chunks) > MAX_CHUNKS_PER_DOCUMENT:
+            chunks = chunks[:MAX_CHUNKS_PER_DOCUMENT]
+            print(f"⚠️ Limited to {MAX_CHUNKS_PER_DOCUMENT} chunks to manage memory")
+        
+        embeddings = []
+        batch_size = EMBEDDING_BATCH_SIZE  # Use config value
+        
+        for i in range(0, len(chunks), batch_size):
+            batch_chunks = chunks[i:i+batch_size]
+            batch_embeddings = [get_embedding(chunk) for chunk in batch_chunks]
+            embeddings.extend(batch_embeddings)
+            # Force garbage collection after each batch
+            gc.collect()
+            print(f"   - Processed batch {i//batch_size + 1}/{(len(chunks) + batch_size - 1)//batch_size}")
         
         # Create metadata for each chunk
         metadatas = [
@@ -247,6 +359,7 @@ async def upload_document(file: UploadFile = File(...)):
 
         # Add the chunks, embeddings, and metadata to ChromaDB
         print(f"🔄 Adding {len(chunks)} chunks to ChromaDB")
+        db_manager = get_db_manager()
         db_manager.add_documents(chunks, embeddings, metadatas)
 
         # Log successful processing
@@ -322,6 +435,7 @@ async def chat(query: str = Form(...)):
         # Generate embedding for the user's query
         query_embedding = get_embedding(query)
         # Retrieve relevant text chunks from ChromaDB based on the query embedding
+        db_manager = get_db_manager()
         relevant_chunks = db_manager.query_documents(query_embedding)
 
         # Construct the prompt for the Gemini model
@@ -334,10 +448,15 @@ async def chat(query: str = Form(...)):
             context = "\n".join(relevant_chunks)
             # Create a RAG-style prompt including the context
             prompt = f"Based on the following context, answer the user's question. If the answer is not in the context, state that you don't have enough information.\n\nContext:\n{context}\n\nUser: {query}\nAI:"
-            print(f"Relevant chunks found. Prompt sent to Gemini:\n{prompt}")
+            print(f"Relevant chunks found. Prompt sent to Gemini.")
 
         # Call the Gemini model to generate a response
+        gemini_model = get_gemini_model()
         response = gemini_model.generate_content(prompt)
+        
+        # Force garbage collection after response generation
+        gc.collect()
+        
         # Return the generated text response
         return {"response": response.text}
     except Exception as e:
@@ -628,6 +747,7 @@ async def get_system_status():
         uploaded_docs_count = len([f for f in os.listdir(UPLOAD_FOLDER) if os.path.isfile(os.path.join(UPLOAD_FOLDER, f))])
     
     # Count documents in ChromaDB
+    db_manager = get_db_manager()
     total_chunks = db_manager.get_document_count()
     
     # Get documents by source
