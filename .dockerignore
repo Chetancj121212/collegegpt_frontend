@@ -1,0 +1,31 @@
+# Frontend files
+src/
+public/
+node_modules/
+.next/
+package.json
+package-lock.json
+bun.lock
+next.config.ts
+next-env.d.ts
+tsconfig.json
+components.json
+postcss.config.mjs
+tailwind.config.ts
+
+# Development files
+.env.local
+.git/
+.gitignore
+README.md
+RAILWAY_DEPLOYMENT_GUIDE.md
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
