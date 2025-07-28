@@ -370,6 +370,7 @@ python main.py
    ```
 
    **Key Changes**:
+
    - ✅ **Simplified startup**: Direct uvicorn command (no complex startup scripts)
    - ✅ **Memory optimized**: Single worker for Railway's memory limits
    - ✅ **Clean codebase**: Removed unnecessary debug and startup files
@@ -482,7 +483,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📊 Current Status
 
-**Deployment Status**: 
+**Deployment Status**:
+
 - ✅ Backend: Railway deployment **OPTIMIZED** (cleaned up unnecessary files)
 - ✅ Frontend: Next.js application ready
 - ✅ Database: ChromaDB integration
@@ -491,6 +493,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - ✅ Memory: Optimized for Railway's 512MB limit
 
 **Removed Files** (cleanup):
+
 - ❌ Debug scripts: `check_azure.py`, `check_chromadb.py`
 - ❌ Complex startup: `run.py`, `start.sh`, `runtime.txt`
 - ❌ Unnecessary deployment files: `Dockerfile`, `RENDER_DEPLOYMENT.md`
