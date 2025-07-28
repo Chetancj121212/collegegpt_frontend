@@ -203,8 +203,10 @@ college_bot/
 │   └── tailwind.config.js           # Tailwind configuration
 ├── 📁 backend/
 │   ├── main.py                      # FastAPI application
+│   ├── run.py                       # Production startup script
 │   ├── config.py                    # Configuration settings
 │   ├── requirements.txt             # Python dependencies
+│   ├── render.yaml                  # Railway deployment config
 │   ├── utils/
 │   │   ├── document_processor.py    # Text extraction & chunking
 │   │   ├── vector_db_manager.py     # ChromaDB operations
@@ -334,12 +336,13 @@ python main.py
 - **Model Loading**: Ensure sufficient disk space for model downloads
 - **ChromaDB Issues**: Check database permissions and storage path
 - **Railway Deployment**:
+
+  - ✅ **FIXED**: Directory navigation issue in `render.yaml`
   - Check build logs for dependency installation errors
   - Verify environment variables are set correctly
   - Ensure Python version compatibility (3.11+ recommended)
   - Monitor memory usage during deployment
-
-### Debugging Tools
+  - Commands now properly execute from `backend/` directory### Debugging Tools
 
 - Frontend: Browser DevTools, React DevTools
 - Backend: FastAPI automatic docs at `/docs`
@@ -358,14 +361,16 @@ python main.py
 2. **Manual Configuration**:
 
    ```yaml
-   # render.yaml (already configured)
+   # render.yaml (updated for Railway compatibility)
    services:
      - type: web
        name: college-bot-backend
        runtime: python
-       buildCommand: pip install -r requirements.txt
-       startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+       buildCommand: cd backend && pip install -r requirements.txt
+       startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
    ```
+
+   **Important**: The `cd backend &&` prefix is required because Railway runs commands from the project root, but our Python files are in the `backend/` directory.
 
 3. **Environment Variables** (set in Railway dashboard):
    ```env
@@ -477,10 +482,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Deployment Status**:
 
-- ✅ Backend: Railway deployment configured
+- ✅ Backend: Railway deployment **FIXED** (directory navigation issue resolved)
 - ✅ Frontend: Next.js application ready
 - ✅ Database: ChromaDB integration
 - ✅ AI: Google Gemini API integration
 - ✅ Storage: Azure Blob & Files support
 
-**Last Updated**: July 29, 2025
+**Last Updated**: July 29, 2025 - Fixed Railway deployment configuration
