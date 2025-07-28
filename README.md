@@ -499,4 +499,102 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - ❌ Unnecessary deployment files: `Dockerfile`, `RENDER_DEPLOYMENT.md`
 - ❌ Redundant dependencies: `psutil`
 
-**Last Updated**: July 29, 2025 - Project optimized and cleaned
+**Last Updated**: January 29, 2025 - Deployment Issues Fixed & Configuration Optimized
+
+## 🛠️ Recent Deployment Fixes
+
+### Issues Resolved
+
+- ✅ **Fixed Railway Deployment Error**: Resolved "python run.py" command not found (exit code 127)
+- ✅ **Corrected Configuration Conflicts**: Fixed nixpacks.toml and railway.json conflicting start commands
+- ✅ **Node.js Detection Issue**: Added .nixpacksignore to prevent unwanted Node.js installation
+- ✅ **Python-Only Deployment**: Configured proper Python-only deployment for backend service
+
+### Configuration Updates
+
+**nixpacks.toml**:
+
+```toml
+[variables]
+NIXPACKS_PYTHON_VERSION = "3.11"
+
+[phases.setup]
+nixPkgs = ["python311", "pip"]
+
+[phases.install]
+cmds = ["echo 'Skipping Node.js install'"]
+
+[phases.build]
+cmds = [
+    "cd backend",
+    "pip install -r requirements.txt",
+    "mkdir -p uploaded_docs",
+    "mkdir -p chroma_db"
+]
+
+[start]
+cmd = "cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT"
+```
+
+**railway.json**:
+
+```json
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "startCommand": "cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
+}
+```
+
+**Added .nixpacksignore**:
+
+```
+package.json
+package-lock.json
+node_modules
+src/
+public/
+next.config.ts
+next-env.d.ts
+tsconfig.json
+components.json
+postcss.config.mjs
+bun.lock
+```
+
+### Deployment Troubleshooting
+
+**Common Issues & Solutions**:
+
+1. **"python run.py" not found**:
+
+   - Solution: Use `uvicorn main:app` instead of `python run.py`
+   - Fixed in both nixpacks.toml and railway.json
+
+2. **Node.js auto-detection interfering**:
+
+   - Solution: Added .nixpacksignore to exclude frontend files
+   - Forces Python-only deployment
+
+3. **Configuration conflicts**:
+   - Solution: Ensure railway.json and nixpacks.toml use same start command
+   - railway.json takes precedence over nixpacks.toml
+
+**Deployment Verification**:
+
+```bash
+# Deploy to Railway
+railway up
+
+# Check deployment logs
+railway logs
+
+# Verify API is running
+curl https://your-deployment-url.railway.app/
+```
