@@ -150,8 +150,8 @@ A full-stack RAG (Retrieval-Augmented Generation) application that allows users 
 
 5. **Start the backend server**
    ```bash
-   python main.py
-   # or
+   uvicorn main:app --host 0.0.0.0 --port 8000
+   # or with auto-reload for development
    uvicorn main:app --reload --host 0.0.0.0 --port 8000
    ```
 
@@ -306,11 +306,11 @@ npm start
 # Install dependencies
 pip install -r requirements.txt
 
-# Start with auto-reload
-uvicorn main:app --reload
+# Start with auto-reload for development
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
-# Run with specific host/port
-python main.py
+# Run for production
+uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
 ### Adding New Features
