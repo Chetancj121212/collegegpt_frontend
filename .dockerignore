@@ -13,6 +13,15 @@ components.json
 postcss.config.mjs
 tailwind.config.ts
 
+# Python virtual environments and cache
+backend/.venv/
+backend/venv/
+backend/__pycache__/
+backend/.env
+backend/.env.example
+backend/nixpacks.toml
+backend/render.yaml
+
 # Development files
 .env.local
 .git/
