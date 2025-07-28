@@ -40,14 +40,18 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-
-.venv 
-venv
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
+# Python
+.venv/
+venv/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
 .Python
+*.log
+*.pot
+*.mo
+*.pkl
 
 # ChromaDB database files - contains embedded document data
 backend/chroma_db/
@@ -57,25 +61,19 @@ backend/chroma_db/
 # Uploaded documents directory - potentially sensitive content
 backend/uploaded_docs/
 
-# Windows batch files - might contain sensitive paths
-*.bat
+# Railway deployment
+.railway/
 
-# Additional Python cache patterns
-**/__pycache__/
-**/*.pyc
-**/*.pyo
-**/*.pyd
-db.sqlite3
-*.sqlite3
-*.db
-*.log
-*.pot
-*.mo
-*.pyc
-*.pyo
-*.pyd
-*.pkl
-.bin
-chroma_db/
-*.bin
-*/.bin/
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp

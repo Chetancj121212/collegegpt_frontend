@@ -9,4 +9,3 @@ google-generativeai==0.3.2
 python-dotenv==1.0.0
 azure-storage-file-share==12.14.1
 azure-storage-blob==12.19.0
-psutil==5.9.6

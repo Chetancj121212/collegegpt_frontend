@@ -1,9 +1,6 @@
 import os
-import tempfile
 import gc
 import uvicorn
-import psutil
-from typing import List, Dict, Any
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware

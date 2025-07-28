@@ -202,11 +202,10 @@ college_bot/
 │   ├── package.json                  # Frontend dependencies
 │   └── tailwind.config.js           # Tailwind configuration
 ├── 📁 backend/
-│   ├── main.py                      # FastAPI application
-│   ├── run.py                       # Production startup script
+│   ├── main.py                      # FastAPI application (core backend)
 │   ├── config.py                    # Configuration settings
-│   ├── requirements.txt             # Python dependencies
-│   ├── render.yaml                  # Railway deployment config
+│   ├── requirements.txt             # Python dependencies (optimized)
+│   ├── render.yaml                  # Railway deployment config (simplified)
 │   ├── utils/
 │   │   ├── document_processor.py    # Text extraction & chunking
 │   │   ├── vector_db_manager.py     # ChromaDB operations
@@ -361,16 +360,19 @@ python main.py
 2. **Manual Configuration**:
 
    ```yaml
-   # render.yaml (updated for Railway compatibility)
+   # render.yaml (optimized for Railway)
    services:
      - type: web
        name: college-bot-backend
        runtime: python
        buildCommand: cd backend && pip install -r requirements.txt
-       startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+       startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT --workers 1
    ```
 
-   **Important**: The `cd backend &&` prefix is required because Railway runs commands from the project root, but our Python files are in the `backend/` directory.
+   **Key Changes**:
+   - ✅ **Simplified startup**: Direct uvicorn command (no complex startup scripts)
+   - ✅ **Memory optimized**: Single worker for Railway's memory limits
+   - ✅ **Clean codebase**: Removed unnecessary debug and startup files
 
 3. **Environment Variables** (set in Railway dashboard):
    ```env
@@ -480,12 +482,18 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📊 Current Status
 
-**Deployment Status**:
-
-- ✅ Backend: Railway deployment **FIXED** (directory navigation issue resolved)
+**Deployment Status**: 
+- ✅ Backend: Railway deployment **OPTIMIZED** (cleaned up unnecessary files)
 - ✅ Frontend: Next.js application ready
 - ✅ Database: ChromaDB integration
 - ✅ AI: Google Gemini API integration
 - ✅ Storage: Azure Blob & Files support
+- ✅ Memory: Optimized for Railway's 512MB limit
 
-**Last Updated**: July 29, 2025 - Fixed Railway deployment configuration
+**Removed Files** (cleanup):
+- ❌ Debug scripts: `check_azure.py`, `check_chromadb.py`
+- ❌ Complex startup: `run.py`, `start.sh`, `runtime.txt`
+- ❌ Unnecessary deployment files: `Dockerfile`, `RENDER_DEPLOYMENT.md`
+- ❌ Redundant dependencies: `psutil`
+
+**Last Updated**: July 29, 2025 - Project optimized and cleaned
